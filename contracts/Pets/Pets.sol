@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "../ERC721Preset.sol";
+import "../utils/ERC721Preset.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./PetsProperties.sol";
 
 contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
     using Strings for uint256;
+
+    uint256 public petPrice;
 
     string[] private basePetTypes = ["Turtle", "Dragon"];
 
@@ -41,15 +43,22 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
                 : "";
     }
 
-    function mintPet(address to, uint256 baseType) public nonReentrant {
-        require(hasPet[_msgSender()], "Only 1 pet");
+    function mintPet(address to, uint256 baseType) public payable nonReentrant {
+        require(!hasPet[_msgSender()], "Only 1 pet");
+        require(msg.value >= petPrice, "Insufficient balance");
 
-        constructNewPet(currentTokenId(), baseType);
+        _constructNewPet(currentTokenId(), baseType);
 
         super.mint(to);
     }
 
-    function constructNewPet(uint256 tokenId, uint256 baseType) internal {
+    function _constructNewPet(uint256 tokenId, uint256 baseType) internal {
         petBaseType[tokenId] = baseType;
+    }
+
+    function burn(uint256 tokenId) public override nonReentrant {
+        require(hasPet[_msgSender()], "Do not have pet");
+        _clearPetProperty(tokenId);
+        super.burn(tokenId);
     }
 }

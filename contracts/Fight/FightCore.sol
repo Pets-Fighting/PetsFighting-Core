@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "../Pets/interfaces/IPets.sol";
-import "../Pets/PetsProperties.sol";
+import "../pets/interfaces/IPets.sol";
+import "../pets/PetsProperties.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "../utils/PetUtils.sol";
 
 /**
  * @notice Fighting between pets will be included in this contract.
@@ -41,7 +42,7 @@ contract FightCore {
         );
 
         // 0: A first 1: B first
-        order = randint(2, HPA + HPB);
+        order = PetUtils.randInt(2, HPA + HPB);
 
         attackDetails = string(
             abi.encodePacked(HPA.toString(), "-", HPB.toString())
@@ -54,15 +55,21 @@ contract FightCore {
         do {
             // randomize harm for per attack
             attackFromA =
-                randint(attackHighA - attackLowA, HPA * block.timestamp) +
+                PetUtils.randInt(
+                    attackHighA - attackLowA,
+                    HPA * block.timestamp
+                ) +
                 attackLowA;
 
             attackFromB =
-                randint(attackHighB - attackLowB, HPB * block.difficulty) +
+                PetUtils.randInt(
+                    attackHighB - attackLowB,
+                    HPB * block.difficulty
+                ) +
                 attackLowB;
 
-            HPA = _sub(HPA, attackFromB);
-            HPB = _sub(HPB, attackFromA);
+            HPA = PetUtils.safeSub(HPA, attackFromB);
+            HPB = PetUtils.safeSub(HPB, attackFromA);
 
             // append the attack details to string variable
             attackDetails = string(
@@ -82,29 +89,5 @@ contract FightCore {
         }
 
         IPets(Pets).gainExperience(winner, expPerFight);
-    }
-
-    function randint(uint256 _length, uint256 _seed)
-        public
-        view
-        returns (uint256)
-    {
-        uint256 random = uint256(
-            keccak256(
-                abi.encodePacked(block.difficulty, block.timestamp, _seed)
-            )
-        );
-        return random % _length;
-    }
-
-    function _sub(uint256 value1, uint256 value2)
-        internal
-        pure
-        returns (uint256)
-    {
-        if (value1 > value2) {
-            return (value1 - value2);
-        }
-        return 0;
     }
 }
