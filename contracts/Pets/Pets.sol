@@ -43,7 +43,12 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
                 : "";
     }
 
-    function mintPet(address to, uint256 baseType) public payable nonReentrant {
+    function mintPet(address to, uint256 baseType)
+        public
+        payable
+        nonReentrant
+        whenNotPaused
+    {
         require(!hasPet[_msgSender()], "Only 1 pet");
         require(msg.value >= petPrice, "Insufficient balance");
 
@@ -56,7 +61,7 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
         petBaseType[tokenId] = baseType;
     }
 
-    function burn(uint256 tokenId) public override nonReentrant {
+    function burn(uint256 tokenId) public override nonReentrant whenNotPaused {
         require(hasPet[_msgSender()], "Do not have pet");
         _clearPetProperty(tokenId);
         super.burn(tokenId);

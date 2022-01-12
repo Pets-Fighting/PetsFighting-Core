@@ -16,17 +16,35 @@ contract FightCore {
 
     uint256 public expPerFight;
 
+    uint256 public energyPerFight;
+
     address public Pets;
+
+    mapping(uint256 => bool) allFightTypes;
 
     constructor(address pets) {
         Pets = pets;
+
+        allFightTypes[1] = true;
+        allFightTypes[2] = true;
     }
 
-    function fight(uint256 petAId, uint256 petBId)
+    modifier enoughEnergy(uint256 tokenId) {
+        require(
+            IPets(Pets).getEnergy(tokenId) >= energyPerFight,
+            "Not enough energy"
+        );
+        _;
+    }
+
+    function pvpFight(uint256 petAId, uint256 petBId)
         external
+        enoughEnergy(petAId)
+        enoughEnergy(petBId)
         returns (
             uint256 order,
             uint256 winner,
+            uint256 loser,
             string memory attackDetails
         )
     {
@@ -81,13 +99,18 @@ contract FightCore {
         } while (HPA > 0 && HPB > 0);
 
         if (order == 0) {
-            if (HPB == 0) winner = petAId;
-            else winner = petBId;
+            winner = HPB == 0 ? petAId : petBId;
+            loser = HPB == 0 ? petBId : petAId;
         } else {
-            if (HPA == 0) winner = petBId;
-            else winner = petAId;
+            winner = HPA == 0 ? petBId : petAId;
+            loser = HPA == 0 ? petAId : petBId;
         }
 
-        IPets(Pets).gainExperience(winner, expPerFight);
+        IPets(Pets).finishFight(winner, loser, expPerFight, energyPerFight);
     }
+
+    function pveFight(uint256 petAId, uint256 difficulty)
+        external
+        enoughEnergy(petAId)
+    {}
 }

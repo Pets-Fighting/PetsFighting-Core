@@ -30,6 +30,7 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     string[] private shoes = ["Nike", "LiNing"];
 
     // level => exp
+    uint256 public maxLevel;
     mapping(uint256 => uint256) levelExp;
 
     // level => base attribute
@@ -37,6 +38,8 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
 
     // tokenId => Pets info
     mapping(uint256 => PetInfo) pets;
+
+    event LevelUpgrade(uint256 tokenId, uint256 newLevel);
 
     modifier onlyFightContract() {
         require(_msgSender() == Fight, "Only fight contract");
@@ -56,6 +59,17 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
         return pets[tokenId];
     }
 
+    function finishFight(
+        uint256 winner,
+        uint256 loser,
+        uint256 expGained,
+        uint256 energyUsed
+    ) external onlyFightContract {
+        _gainExperience(winner, expGained);
+        useEnergy(winner, energyUsed);
+        useEnergy(loser, energyUsed);
+    }
+
     //**************//
     //**  Energy  **//
     //**************//
@@ -64,10 +78,7 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
         energy = pets[tokenId].base.energy;
     }
 
-    function useEnergy(uint256 tokenId, uint256 energyUsed)
-        external
-        onlyFightContract
-    {
+    function useEnergy(uint256 tokenId, uint256 energyUsed) internal {
         require(energyUsed <= getEnergy(tokenId), "Energy not sufficient");
         pets[tokenId].base.energy -= energyUsed;
     }
@@ -76,20 +87,20 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     //**   Exp    **//
     //**************//
 
-    function gainExperience(uint256 tokenId, uint256 newExp)
-        external
-        onlyFightContract
-    {
+    function _gainExperience(uint256 tokenId, uint256 newExp) internal {
         uint256 currentLevel = pets[tokenId].base.experience;
 
         pets[tokenId].base.experience += newExp;
 
-        if (pets[tokenId].base.experience >= levelExp[currentLevel])
-            _upgradeLevel(tokenId);
+        if (
+            currentLevel < maxLevel &&
+            pets[tokenId].base.experience >= levelExp[currentLevel]
+        ) _upgradeLevel(tokenId);
     }
 
     function _upgradeLevel(uint256 tokenId) internal {
         pets[tokenId].level += 1;
+        emit LevelUpgrade(tokenId, pets[tokenId].level);
     }
 
     //**************//

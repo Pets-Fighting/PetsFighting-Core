@@ -15,5 +15,12 @@ interface IPets is IPetsProperties {
 
     function getHP(uint256 tokenId) external view returns (uint256 HP);
 
-    function gainExperience(uint256 tokenId, uint256 newExp) external;
+    function getEnergy(uint256 tokenId) external view returns (uint256 engergy);
+
+    function finishFight(
+        uint256 winnerTokenId,
+        uint256 loserTokenId,
+        uint256 expGained,
+        uint256 energyUsed
+    ) external;
 }

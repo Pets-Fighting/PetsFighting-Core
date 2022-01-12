@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 
-contract ProxyManager is ERC1967Proxy {
+contract TransparentUpgradeableProxy is ERC1967Proxy {
     /**
      * @dev Initializes an upgradeable proxy managed by `_admin`, backed by the implementation at `_logic`, and
      * optionally initialized with `_data` as explained in {ERC1967Proxy-constructor}.
