@@ -2,9 +2,15 @@
 pragma solidity ^0.8.10;
 import "./FightBase.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract PVPFight is FightBase {
     using Strings for uint256;
+    using SafeERC20 for IERC20;
+
+    address public Crystal;
 
     event PVPFightFinished(
         uint256 tokenIdA,
@@ -14,7 +20,9 @@ contract PVPFight is FightBase {
         string details
     );
 
-    constructor(address pets) FightBase(pets) {}
+    constructor(address pets, address crystal) FightBase(pets) {
+        Crystal = crystal;
+    }
 
     // Type == 2: Match Fighting
     function matchFight(uint256 petAId, uint256 petBId)
@@ -43,7 +51,20 @@ contract PVPFight is FightBase {
 
     // Type == 3: Rank Fighting
     function rankFight(uint256 petAId, uint256 petBId) external {
-        _checkRank(petAId, petBId);
+        (uint256 rankA, uint256 rankB) = _checkRank(petAId, petBId);
+
+        IERC20(Crystal).safeTransferFrom(
+            IPets(Pets).ownerOf(petAId),
+            address(this),
+            entranceFeeForRank[rankA]
+        );
+
+        IERC20(Crystal).safeTransferFrom(
+            IPets(Pets).ownerOf(petBId),
+            address(this),
+            entranceFeeForRank[rankB]
+        );
+
         uint256 order = _getFightOrder(petAId, petBId);
 
         (uint256 winner, string memory details) = pvpFight(

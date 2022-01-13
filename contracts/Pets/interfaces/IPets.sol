@@ -2,8 +2,9 @@
 pragma solidity ^0.8.10;
 
 import "./IPetsProperties.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-interface IPets is IPetsProperties {
+interface IPets is IPetsProperties, IERC721 {
     function getAttack(uint256 tokenId)
         external
         view

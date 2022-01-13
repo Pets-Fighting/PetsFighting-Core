@@ -10,6 +10,8 @@ abstract contract FightBase is Ownable {
 
     address public Pets;
 
+    mapping(uint256 => uint256) public entranceFeeForRank;
+
     mapping(uint256 => uint256) public energyPerFight;
 
     mapping(uint256 => uint256) public expPerFight;
@@ -63,9 +65,13 @@ abstract contract FightBase is Ownable {
         hp = IPets(Pets).getHP(petId);
     }
 
-    function _checkRank(uint256 petAId, uint256 petBId) internal view {
-        uint256 rankA = IPets(Pets).getRankLevel(petAId);
-        uint256 rankB = IPets(Pets).getRankLevel(petBId);
+    function _checkRank(uint256 petAId, uint256 petBId)
+        internal
+        view
+        returns (uint256 rankA, uint256 rankB)
+    {
+        rankA = IPets(Pets).getRankLevel(petAId);
+        rankB = IPets(Pets).getRankLevel(petBId);
 
         uint256 rankDiff = rankA >= rankB ? (rankA - rankB) : (rankB - rankA);
 
