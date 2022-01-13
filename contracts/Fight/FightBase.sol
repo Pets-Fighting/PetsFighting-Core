@@ -6,11 +6,15 @@ import "../utils/PetUtils.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract FightBase is Ownable {
+    uint256 public MAX_RANK_DIFF = 1;
+
     address public Pets;
 
     mapping(uint256 => uint256) public energyPerFight;
 
     mapping(uint256 => uint256) public expPerFight;
+
+    mapping(uint256 => uint256) public rankLevel;
 
     constructor(address pets) {
         Pets = pets;
@@ -57,5 +61,26 @@ abstract contract FightBase is Ownable {
 
     function _getHP(uint256 petId) internal view returns (uint256 hp) {
         hp = IPets(Pets).getHP(petId);
+    }
+
+    function _checkRank(uint256 petAId, uint256 petBId) internal view {
+        uint256 rankA = IPets(Pets).getRankLevel(petAId);
+        uint256 rankB = IPets(Pets).getRankLevel(petBId);
+
+        uint256 rankDiff = rankA >= rankB ? (rankA - rankB) : (rankB - rankA);
+
+        require(rankDiff <= MAX_RANK_DIFF, "Rank not match");
+    }
+
+    function _getFightOrder(uint256 petAId, uint256 petBId)
+        internal
+        view
+        returns (uint256 order)
+    {
+        uint256 hpA = _getHP(petAId);
+        uint256 hpB = _getHP(petBId);
+
+        // 0: A first 1: B first
+        order = PetUtils.randInt(2, hpA + hpB);
     }
 }

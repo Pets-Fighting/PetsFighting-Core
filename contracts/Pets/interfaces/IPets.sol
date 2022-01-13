@@ -17,6 +17,16 @@ interface IPets is IPetsProperties {
 
     function getEnergy(uint256 tokenId) external view returns (uint256 engergy);
 
+    function getFightingForce(uint256 petId)
+        external
+        view
+        returns (uint256 force);
+
+    function getRankLevel(uint256 petId)
+        external
+        view
+        returns (uint256 rankLevel);
+
     function finishFight(
         uint256 winnerTokenId,
         uint256 loserTokenId,

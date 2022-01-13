@@ -15,7 +15,6 @@ library PetUtils {
         return random % _length;
     }
 
-
     function safeSub(uint256 value1, uint256 value2)
         internal
         pure

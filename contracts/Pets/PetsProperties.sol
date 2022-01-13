@@ -36,10 +36,22 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     // level => base attribute
     mapping(uint256 => BaseInfo) levelAttribute;
 
+    uint256 public maxRankLevel;
+    mapping(uint256 => uint256) rankScore;
+    string[] private ranks = [
+        "Bronze",
+        "Silver",
+        "Gold",
+        "Platium",
+        "Diamond",
+        "Master"
+    ];
+
     // tokenId => Pets info
     mapping(uint256 => PetInfo) pets;
 
     event LevelUpgrade(uint256 tokenId, uint256 newLevel);
+    event RankLevelUpgrade(uint256 petId, uint256 newRankLevel);
 
     modifier onlyFightContract() {
         require(_msgSender() == Fight, "Only fight contract");
@@ -95,12 +107,12 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
         if (
             currentLevel < maxLevel &&
             pets[tokenId].base.experience >= levelExp[currentLevel]
-        ) _upgradeLevel(tokenId);
+        ) _upgradeLevel(tokenId, currentLevel + 1);
     }
 
-    function _upgradeLevel(uint256 tokenId) internal {
+    function _upgradeLevel(uint256 tokenId, uint256 newLevel) internal {
         pets[tokenId].level += 1;
-        emit LevelUpgrade(tokenId, pets[tokenId].level);
+        emit LevelUpgrade(tokenId, newLevel);
     }
 
     //**************//
@@ -142,5 +154,46 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
 
     function _clearPetProperty(uint256 tokenId) internal {
         delete pets[tokenId];
+    }
+
+    //**************//
+    //**  Force   **//
+    //**************//
+
+    function getFightingForce(uint256 petId)
+        external
+        view
+        returns (uint256 force)
+    {
+        PetInfo memory pet = pets[petId];
+        force = pet.level * pet.base.attackHigh;
+    }
+
+    //**************//
+    //**   Rank   **//
+    //**************//
+
+    function getRankLevel(uint256 petId)
+        external
+        view
+        returns (uint256 rankLevel)
+    {
+        rankLevel = pets[petId].rank.rankLevel;
+    }
+
+    function gainRankScore(uint256 petId, uint256 score) external {
+        uint256 currentRankLevel = pets[petId].rank.rankLevel;
+
+        pets[petId].rank.rankScore += score;
+
+        if (
+            currentRankLevel < maxRankLevel &&
+            pets[petId].rank.rankScore >= rankScore[currentRankLevel]
+        ) _upgradeLevel(petId, currentRankLevel + 1);
+    }
+
+    function _upgradeRankLevel(uint256 petId, uint256 newRankLevel) internal {
+        pets[petId].rank.rankLevel += 1;
+        emit RankLevelUpgrade(petId, newRankLevel);
     }
 }

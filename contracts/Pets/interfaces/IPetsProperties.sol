@@ -24,8 +24,14 @@ interface IPetsProperties {
         uint256 attackHigh;
     }
 
+    struct RankInfo {
+        uint256 rankScore;
+        uint256 rankLevel;
+    }
+
     struct PetInfo {
         uint256 level;
+        RankInfo rank;
         BaseInfo base;
         Weapon[] weapons; // All weapons currently holding
     }

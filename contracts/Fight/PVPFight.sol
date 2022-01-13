@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract PVPFight is FightBase {
     using Strings for uint256;
 
-    event PVPFight(
+    event PVPFightFinished(
         uint256 tokenIdA,
         uint256 tokenIdB,
         uint256 fightType,
@@ -22,11 +22,7 @@ contract PVPFight is FightBase {
         enoughEnergy(petAId, 2)
         enoughEnergy(petBId, 2)
     {
-        uint256 HPA = _getHP(petAId);
-        uint256 HPB = _getHP(petBId);
-
-        // 0: A first 1: B first
-        uint256 order = PetUtils.randInt(2, HPA + HPB);
+        uint256 order = _getFightOrder(petAId, petBId);
 
         (uint256 winner, string memory details) = pvpFight(
             petAId,
@@ -42,11 +38,21 @@ contract PVPFight is FightBase {
 
         IPets(Pets).finishFight(winnerId, loserId, newExp, energyUsed);
 
-        emit PVPFight(petAId, petBId, 2, winner, details);
+        emit PVPFightFinished(petAId, petBId, 2, winner, details);
     }
 
     // Type == 3: Rank Fighting
-    function rankFight() external {}
+    function rankFight(uint256 petAId, uint256 petBId) external {
+        _checkRank(petAId, petBId);
+        uint256 order = _getFightOrder(petAId, petBId);
+
+        (uint256 winner, string memory details) = pvpFight(
+            petAId,
+            petBId,
+            order
+        );
+        emit PVPFightFinished(petAId, petBId, 3, winner, details);
+    }
 
     // Type == 4: Round Fighting
     function roundFight() external {}
