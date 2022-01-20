@@ -45,24 +45,24 @@ abstract contract FightBase is Ownable {
         Pets = pets;
     }
 
-    function _getAttackLow(uint256 petId)
+    function _getAttackLow(uint256 tokenId)
         internal
         view
         returns (uint256 attackLow)
     {
-        (, attackLow) = IPets(Pets).getAttack(petId);
+        (, attackLow) = IPets(Pets).getAttack(tokenId);
     }
 
-    function _getAttackHigh(uint256 petId)
+    function _getAttackHigh(uint256 tokenId)
         internal
         view
         returns (uint256 attackHigh)
     {
-        (attackHigh, ) = IPets(Pets).getAttack(petId);
+        (attackHigh, ) = IPets(Pets).getAttack(tokenId);
     }
 
-    function _getHP(uint256 petId) internal view returns (uint256 hp) {
-        hp = IPets(Pets).getHP(petId);
+    function _getHP(uint256 tokenId) internal view returns (uint256 hp) {
+        hp = IPets(Pets).getHP(tokenId);
     }
 
     function _checkRank(uint256 petAId, uint256 petBId)

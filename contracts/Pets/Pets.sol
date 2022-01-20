@@ -12,7 +12,7 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
 
     string[] private basePetTypes = ["Turtle", "Dragon"];
 
-    mapping(uint256 => uint256) petBaseType;
+    mapping(uint256 => uint256) public petBaseType;
 
     mapping(address => bool) public hasPet;
 
@@ -20,7 +20,9 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
         string memory name,
         string memory symbol,
         string memory baseTokenURI
-    ) ERC721Preset(name, symbol, baseTokenURI) {}
+    ) ERC721Preset(name, symbol, baseTokenURI) {
+        // petsPropertiesContract = _petsPropertiesContract;
+    }
 
     function tokenURI(uint256 tokenId)
         public
@@ -43,25 +45,30 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
                 : "";
     }
 
-    function mintPet(address to, uint256 baseType)
-        public
-        payable
-        nonReentrant
-        whenNotPaused
+    function getBaseType(uint256 tokenId)
+        external
+        view
+        returns (string memory)
     {
+        return basePetTypes[petBaseType[tokenId]];
+    }
+
+    function mintPet(address to, uint256 baseType) public payable nonReentrant {
         require(!hasPet[_msgSender()], "Only 1 pet");
         require(msg.value >= petPrice, "Insufficient balance");
 
         _constructNewPet(currentTokenId(), baseType);
 
         super.mint(to);
+
+        hasPet[_msgSender()] = true;
     }
 
     function _constructNewPet(uint256 tokenId, uint256 baseType) internal {
         petBaseType[tokenId] = baseType;
     }
 
-    function burn(uint256 tokenId) public override nonReentrant whenNotPaused {
+    function burn(uint256 tokenId) public override nonReentrant {
         require(hasPet[_msgSender()], "Do not have pet");
         _clearPetProperty(tokenId);
         super.burn(tokenId);

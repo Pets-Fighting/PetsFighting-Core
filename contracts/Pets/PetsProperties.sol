@@ -20,6 +20,8 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     address public Fight;
     address public BlindBox;
 
+    // address public petsContract;
+
     /**
      * @notice Strings are used for showing
      */
@@ -51,7 +53,7 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     mapping(uint256 => PetInfo) pets;
 
     event LevelUpgrade(uint256 tokenId, uint256 newLevel);
-    event RankLevelUpgrade(uint256 petId, uint256 newRankLevel);
+    event RankLevelUpgrade(uint256 tokenId, uint256 newRankLevel);
 
     modifier onlyFightContract() {
         require(_msgSender() == Fight, "Only fight contract");
@@ -62,6 +64,13 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
         require(_msgSender() == BlindBox, "Only blindbox contract");
         _;
     }
+
+    /**
+     * @notice Set the pets contract, only by the owner
+     */
+    // function setPetsContract(address _petsContract) external onlyOwner {
+    //     petsContract = _petsContract;
+    // }
 
     function getPetInfo(uint256 tokenId)
         external
@@ -126,7 +135,6 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     //**************//
     //**  Weapon  **//
     //**************//
-
     function getNewWeapon(
         uint256 tokenId,
         uint256 kind,
@@ -143,7 +151,6 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     //**************//
     //**  Attack  **//
     //**************//
-
     function getAttack(uint256 tokenId)
         external
         view
@@ -160,12 +167,12 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     //**  Force   **//
     //**************//
 
-    function getFightingForce(uint256 petId)
+    function getFightingForce(uint256 tokenId)
         external
         view
         returns (uint256 force)
     {
-        PetInfo memory pet = pets[petId];
+        PetInfo memory pet = pets[tokenId];
         force = pet.level * pet.base.attackHigh;
     }
 
@@ -173,27 +180,27 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     //**   Rank   **//
     //**************//
 
-    function getRankLevel(uint256 petId)
+    function getRankLevel(uint256 tokenId)
         external
         view
         returns (uint256 rankLevel)
     {
-        rankLevel = pets[petId].rank.rankLevel;
+        rankLevel = pets[tokenId].rank.rankLevel;
     }
 
-    function gainRankScore(uint256 petId, uint256 score) external {
-        uint256 currentRankLevel = pets[petId].rank.rankLevel;
+    function gainRankScore(uint256 tokenId, uint256 score) external {
+        uint256 currentRankLevel = pets[tokenId].rank.rankLevel;
 
-        pets[petId].rank.rankScore += score;
+        pets[tokenId].rank.rankScore += score;
 
         if (
             currentRankLevel < maxRankLevel &&
-            pets[petId].rank.rankScore >= rankScore[currentRankLevel]
-        ) _upgradeLevel(petId, currentRankLevel + 1);
+            pets[tokenId].rank.rankScore >= rankScore[currentRankLevel]
+        ) _upgradeLevel(tokenId, currentRankLevel + 1);
     }
 
-    function _upgradeRankLevel(uint256 petId, uint256 newRankLevel) internal {
-        pets[petId].rank.rankLevel += 1;
-        emit RankLevelUpgrade(petId, newRankLevel);
+    function _upgradeRankLevel(uint256 tokenId, uint256 newRankLevel) internal {
+        pets[tokenId].rank.rankLevel += 1;
+        emit RankLevelUpgrade(tokenId, newRankLevel);
     }
 }

@@ -122,7 +122,7 @@ contract PVPFight is FightBase {
                     HPB * block.difficulty
                 ) +
                 _getAttackLow(petBId);
-
+ 
             HPA = PetUtils.safeSub(HPA, attackFromB);
             HPB = PetUtils.safeSub(HPB, attackFromA);
 
