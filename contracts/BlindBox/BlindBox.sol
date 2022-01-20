@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
-contract BlindBox is ERC721("PetBlindBox", "PBB") {
+contract BlindBox is ERC721Enumerable {
     uint256 public totalBoxes;
 
+    constructor() ERC721("PetBlindBox", "PBB") {}
+
     function buy() external {
-        _mint(msg.sender, totalBoxes);
+        _safeMint(msg.sender, totalBoxes);
         totalBoxes += 1;
     }
-
 }

@@ -79,7 +79,9 @@ contract PVPFight is FightBase {
     function roundFight() external {}
 
     // Type == 5: Death Fighting
-    function deathFight() external {}
+    function deathFight() external {
+        
+    }
 
     function pvpFight(
         uint256 petAId,
