@@ -50,7 +50,7 @@ abstract contract FightBase is Ownable {
         view
         returns (uint256 attackLow)
     {
-        (, attackLow) = IPets(Pets).getAttack(tokenId);
+        (attackLow, ) = IPets(Pets).getAttack(tokenId);
     }
 
     function _getAttackHigh(uint256 tokenId)
@@ -58,7 +58,7 @@ abstract contract FightBase is Ownable {
         view
         returns (uint256 attackHigh)
     {
-        (attackHigh, ) = IPets(Pets).getAttack(tokenId);
+        (, attackHigh) = IPets(Pets).getAttack(tokenId);
     }
 
     function _getHP(uint256 tokenId) internal view returns (uint256 hp) {

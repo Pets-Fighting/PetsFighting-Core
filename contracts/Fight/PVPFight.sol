@@ -128,7 +128,7 @@ contract PVPFight is FightBase {
 
             // append the attack details to string variable
             fightingDetails = string(
-                abi.encodePacked(fightingDetails, "-", attackFromA.toString())
+                abi.encodePacked(fightingDetails, ":", attackFromA.toString())
             );
             fightingDetails = string(
                 abi.encodePacked(fightingDetails, "-", attackFromB.toString())

@@ -65,12 +65,26 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
         _;
     }
 
+    function setFightContract(address fightContract) external onlyOwner {
+        Fight = fightContract;
+    }
+
     /**
      * @notice Set the pets contract, only by the owner
      */
     // function setPetsContract(address _petsContract) external onlyOwner {
     //     petsContract = _petsContract;
     // }
+
+    function _initNewPet(uint256 tokenId) internal {
+        PetInfo storage newPet = pets[tokenId];
+
+        newPet.base.energy = 100;
+        newPet.base.maxHP = 1000;
+        newPet.base.maxMP = 100;
+        newPet.base.attackHigh = 30;
+        newPet.base.attackLow = 20;
+    }
 
     function getPetInfo(uint256 tokenId)
         external
@@ -154,7 +168,7 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     function getAttack(uint256 tokenId)
         external
         view
-        returns (uint256, uint256)
+        returns (uint256 attackLow, uint256 attackHigh)
     {
         return (pets[tokenId].base.attackLow, pets[tokenId].base.attackHigh);
     }
@@ -202,5 +216,12 @@ abstract contract PetsProperties is IPetsProperties, Ownable {
     function _upgradeRankLevel(uint256 tokenId, uint256 newRankLevel) internal {
         pets[tokenId].rank.rankLevel += 1;
         emit RankLevelUpgrade(tokenId, newRankLevel);
+    }
+
+    //**************//
+    //**    HP    **//
+    //**************//
+    function getHP(uint256 tokenId) external view returns (uint256 hp) {
+        return pets[tokenId].base.maxHP;
     }
 }

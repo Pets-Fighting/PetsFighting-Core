@@ -14,7 +14,7 @@ interface IPets is IPetsProperties, IERC721 {
 
     function updatePetInfo(PetInfo memory) external;
 
-    function getHP(uint256 tokenId) external view returns (uint256 HP);
+    function getHP(uint256 tokenId) external view returns (uint256 hp);
 
     function getEnergy(uint256 tokenId) external view returns (uint256 engergy);
 

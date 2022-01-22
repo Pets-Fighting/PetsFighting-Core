@@ -66,6 +66,7 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
 
     function _constructNewPet(uint256 tokenId, uint256 baseType) internal {
         petBaseType[tokenId] = baseType;
+        _initNewPet(tokenId);
     }
 
     function burn(uint256 tokenId) public override nonReentrant {
