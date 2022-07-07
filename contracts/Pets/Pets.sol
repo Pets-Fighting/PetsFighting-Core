@@ -8,13 +8,18 @@ import "./PetsProperties.sol";
 contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
     using Strings for uint256;
 
+    // Pet mint price
     uint256 public petPrice;
 
-    string[] private basePetTypes = ["Turtle", "Dragon"];
+    // Base pet types list
+    string[] private basePetTypes = ["Panguin", "Turtle", "Dragon"];
 
     mapping(uint256 => uint256) public petBaseType;
 
     mapping(address => bool) public hasPet;
+
+    // User pet id
+    mapping(address => uint256) public userPet;
 
     constructor(
         string memory name,
@@ -22,6 +27,8 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
         string memory baseTokenURI
     ) ERC721Preset(name, symbol, baseTokenURI) {
         // petsPropertiesContract = _petsPropertiesContract;
+
+        petPrice = 0.02 ether;
     }
 
     function tokenURI(uint256 tokenId)
@@ -53,16 +60,19 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
         return basePetTypes[petBaseType[tokenId]];
     }
 
-    function mintPet(address to, uint256 baseType) public payable nonReentrant {
-        require(!hasPet[_msgSender()], "Only 1 pet");
-        require(msg.value >= petPrice, "Insufficient balance");
+    function mintPet( uint256 baseType) public payable nonReentrant {
+        require(userPet[msg.sender] == 0, "Only 1 pet");
+
+        require(msg.value >= petPrice, "Insufficient value");
 
         _constructNewPet(currentTokenId(), baseType);
 
-        super.mint(to);
+        // Record the pet id of this user
+        userPet[msg.sender] = super.currentTokenId();
 
-        hasPet[_msgSender()] = true;
+        super.mint(msg.sender);
     }
+
 
     function _constructNewPet(uint256 tokenId, uint256 baseType) internal {
         petBaseType[tokenId] = baseType;
@@ -70,8 +80,11 @@ contract Pets is ERC721Preset, ReentrancyGuard, PetsProperties {
     }
 
     function burn(uint256 tokenId) public override nonReentrant {
-        require(hasPet[_msgSender()], "Do not have pet");
+        require(userPet[msg.sender] > 0, "No pet");
+
+        // Delete the record
         _clearPetProperty(tokenId);
+
         super.burn(tokenId);
     }
 }

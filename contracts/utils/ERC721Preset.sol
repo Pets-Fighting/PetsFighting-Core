@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
@@ -22,10 +22,10 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  * roles, as well as the default admin role, which will let it grant both minter
  * and pauser roles to other accounts.
  */
-contract ERC721Preset is Context, ERC721Enumerable {
+contract ERC721Preset is ERC721 {
     using Counters for Counters.Counter;
 
-    Counters.Counter private _tokenIdTracker;
+    Counters.Counter internal _tokenIdTracker;
 
     string private _baseTokenURI;
 
@@ -42,6 +42,10 @@ contract ERC721Preset is Context, ERC721Enumerable {
         string memory baseTokenURI
     ) ERC721(name, symbol) {
         _baseTokenURI = baseTokenURI;
+
+        // Start from 1
+        // Zero token id will means user no pet
+        _tokenIdTracker.increment();
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
@@ -77,26 +81,5 @@ contract ERC721Preset is Context, ERC721Enumerable {
             "ERC721Burnable: caller is not owner nor approved"
         );
         _burn(tokenId);
-    }
-
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual override(ERC721Enumerable) {
-        super._beforeTokenTransfer(from, to, tokenId);
-    }
-
-    /**
-     * @dev See {IERC165-supportsInterface}.
-     */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC721Enumerable)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
     }
 }

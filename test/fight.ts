@@ -1,6 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber, ContractReceipt, ContractTransaction } from "ethers";
+import { parseUnits } from "ethers/lib/utils";
 import { ethers } from "hardhat";
 import {
   Crystal,
@@ -19,6 +20,8 @@ describe("Fight", function () {
   let Pets: Pets__factory, pets: Pets;
 
   let PVPFight: PVPFight__factory, pvpFight: PVPFight;
+
+  const PET_PRICE = parseUnits("0.02");
 
   beforeEach(async () => {
     [dev_account, player1, player2] = await ethers.getSigners();
@@ -46,24 +49,24 @@ describe("Fight", function () {
 
   describe("Mint Pets", () => {
     beforeEach(async () => {
-      await pets.mintPet(dev_account.address, 0);
+      await pets.mintPet(0, { value: PET_PRICE });
     });
     it("should be able to mint a pet", async () => {
       expect(await pets.balanceOf(dev_account.address)).to.equal(1);
     });
 
     it("should not be able to mint more than 1 pet", async () => {
-      await expect(pets.mintPet(dev_account.address, 0)).to.be.revertedWith(
+      await expect(pets.mintPet(0, { value: PET_PRICE })).to.be.revertedWith(
         "Only 1 pet"
       );
     });
 
     it("should have the correct base type", async () => {
-      expect(await pets.getBaseType(0)).to.equal("Turtle");
+      expect(await pets.getBaseType(0)).to.equal("Panguin");
     });
 
     it("should be able to burn a pet", async () => {
-      const petId = await pets.tokenOfOwnerByIndex(dev_account.address, 0);
+      const petId = await pets.userPet(dev_account.address);
       await expect(pets.burn(petId))
         .to.emit(pets, "Transfer")
         .withArgs(dev_account.address, ethers.constants.AddressZero, petId);
@@ -74,15 +77,20 @@ describe("Fight", function () {
     const type = 2;
     let tokenIdA: BigNumber, tokenIdB: BigNumber;
     let expPerFight: BigNumber;
+
     beforeEach(async () => {
       // Mint pets for two players
-      await pets.connect(player1).mintPet(player1.address, 0);
-      await pets.connect(player2).mintPet(player2.address, 1);
+      await pets.connect(player1).mintPet(0, { value: PET_PRICE });
+      await pets.connect(player2).mintPet(1, { value: PET_PRICE });
 
-      tokenIdA = await pets.tokenOfOwnerByIndex(player1.address, 0);
-      tokenIdB = await pets.tokenOfOwnerByIndex(player2.address, 0);
+      tokenIdA = await pets.userPet(player1.address);
+      tokenIdB = await pets.userPet(player2.address);
+
+      console.log("token id a", tokenIdA);
+      console.log("token id b", tokenIdB);
 
       expPerFight = await pvpFight.expPerFight(type);
+      console.log("exp per fight", expPerFight);
     });
 
     it("should be able to have a pvpfight", async () => {
@@ -96,12 +104,15 @@ describe("Fight", function () {
       expect(receipt.events![0].event).to.equal("PVPFightFinished");
       expect(receipt.events![0].args!.fightType).to.equal(type);
 
-      const winner: number = receipt.events![0].args!.winner.toNumber();
+      const winnerPlace: number = receipt.events![0].args!.winner.toNumber();
       const fightDetails: string = receipt.events![0].args!.details;
-      console.log("fighting details:", fightDetails);
-      console.log("winner Id:", winner);
 
-      expect((await pets.getPetInfo(winner)).base.experience).to.equal(
+      console.log("fighting details:", fightDetails);
+      console.log("winner Id:", winnerPlace);
+
+      const winnerTokenId = winnerPlace == 0 ? tokenIdA : tokenIdB;
+
+      expect((await pets.getPetInfo(winnerTokenId)).base.experience).to.equal(
         expPerFight
       );
     });
